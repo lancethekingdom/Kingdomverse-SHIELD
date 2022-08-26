@@ -7,7 +7,7 @@ import { SafeMath } from '../utils/safeMath'
 import { BigNumber } from 'ethers'
 const chance = new Chance()
 
-describe.only('UNIT TEST: Shield Token - mint', () => {
+describe('UNIT TEST: Shield Token - mint', () => {
   it('should throw error if contract is paused', async () => {
     const [owner] = await ethers.getSigners()
     const [token, , authSigner] = await deployShieldToken({ owner })
