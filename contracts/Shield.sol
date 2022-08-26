@@ -129,7 +129,6 @@ contract Shield is ERC20, Pausable, Ownable, ERC20Burnable {
         uint256 _nonce,
         bytes memory sig
     ) public {
-        _requireNotPaused();
 
         require(!usedMintNonces[_nonce], "Nonce consumed");
         require(
