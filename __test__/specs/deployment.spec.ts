@@ -12,7 +12,7 @@ describe('UNIT TEST: Shield Token - deployment', () => {
     const [token] = await deployShieldToken()
     const tokenName = await token.name()
 
-    expect(tokenName).to.equal('Shield')
+    expect(tokenName).to.equal('SHIELD')
   })
 
   it('should return correct symbol when token is deployed', async () => {

@@ -19,7 +19,7 @@ contract Shield is ERC20, Pausable, Ownable, ERC20Burnable {
     mapping(uint256 => uint256) periodicMinted;
     mapping(uint256 => bool) usedMintNonces;
 
-    constructor(address _authSigner) ERC20("Shield", "SHIELD") {
+    constructor(address _authSigner) ERC20("SHIELD", "SHIELD") {
         require(_authSigner != address(0), "Invalid addr");
         authSigner = _authSigner;
 
@@ -129,7 +129,6 @@ contract Shield is ERC20, Pausable, Ownable, ERC20Burnable {
         uint256 _nonce,
         bytes memory sig
     ) public {
-
         require(!usedMintNonces[_nonce], "Nonce consumed");
         require(
             _validateMintHash(msg.sender, _amount, _nonce, sig),
