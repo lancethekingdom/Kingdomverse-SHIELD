@@ -1,13 +1,13 @@
 // contracts/King.sol
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.9;
+pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-import "hardhat/console.sol";
+// import "hardhat/console.sol";
 
 contract Shield is ERC20, Pausable, Ownable, ERC20Burnable {
     uint256 public constant RESERVE = 2000000 ether;
@@ -25,6 +25,7 @@ contract Shield is ERC20, Pausable, Ownable, ERC20Burnable {
 
         deployTime = block.timestamp;
         _mint(msg.sender, RESERVE);
+        periodicMinted[0] = 0;
     }
 
     function splitSignature(bytes memory sig)
@@ -111,14 +112,23 @@ contract Shield is ERC20, Pausable, Ownable, ERC20Burnable {
         return INITIAL_MINTABLE_PER_PERIOD / (2**currentPeriod());
     }
 
-    function _validateMintHash(
+    function _validateHash(
+        string memory _methodIdentifier,
         address _minter,
         uint256 _amount,
         uint256 _nonce,
         bytes memory sig
     ) internal view returns (bool) {
         bytes32 msgHash = prefixed(
-            keccak256(abi.encodePacked(address(this), _minter, _amount, _nonce))
+            keccak256(
+                abi.encodePacked(
+                    _methodIdentifier,
+                    address(this),
+                    _minter,
+                    _amount,
+                    _nonce
+                )
+            )
         );
         return recoverSigner(msgHash, sig) == authSigner;
     }
@@ -131,7 +141,13 @@ contract Shield is ERC20, Pausable, Ownable, ERC20Burnable {
     ) public {
         require(!usedMintNonces[_nonce], "Nonce consumed");
         require(
-            _validateMintHash(msg.sender, _amount, _nonce, sig),
+            _validateHash(
+                "mint(address,uint256,uint256,bytes)",
+                msg.sender,
+                _amount,
+                _nonce,
+                sig
+            ),
             "Invalid signature"
         );
 
@@ -140,14 +156,13 @@ contract Shield is ERC20, Pausable, Ownable, ERC20Burnable {
     }
 
     function _mint(address account, uint256 amount) internal virtual override {
-        _requireNotPaused();
-
         // check if not exceed currentMintCap
         require(
             (periodicMinted[currentPeriod()] + amount) <= currentMintCap(),
             "Exceed current mint cap"
         );
 
+        _requireNotPaused();
         super._mint(account, amount);
     }
 }

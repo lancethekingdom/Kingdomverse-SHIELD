@@ -15,8 +15,14 @@ describe('UNIT TEST: Shield Token - mint', () => {
     const mintAmount = chance.integer({ min: 1, max: 100 })
 
     const msgHash = ethers.utils.solidityKeccak256(
-      ['address', 'address', 'uint256', 'uint256'],
-      [token.address, owner.address, UnitParser.toEther(mintAmount), 1],
+      ['string', 'address', 'address', 'uint256', 'uint256'],
+      [
+        'mint(address,uint256,uint256,bytes)',
+        token.address,
+        owner.address,
+        UnitParser.toEther(mintAmount),
+        1,
+      ],
     )
 
     const authedSig = await authSigner.signMessage(
@@ -45,10 +51,15 @@ describe('UNIT TEST: Shield Token - mint', () => {
     const mintAmount = chance.integer({ min: 1, max: 100 })
 
     const msgHash = ethers.utils.solidityKeccak256(
-      ['address', 'address', 'uint256', 'uint256'],
-      [token.address, owner.address, UnitParser.toEther(mintAmount), 1],
+      ['string', 'address', 'address', 'uint256', 'uint256'],
+      [
+        'mint(address,uint256,uint256,bytes)',
+        token.address,
+        owner.address,
+        UnitParser.toEther(mintAmount),
+        1,
+      ],
     )
-
     const authedSig = await authSigner.signMessage(
       ethers.utils.arrayify(msgHash),
     )
