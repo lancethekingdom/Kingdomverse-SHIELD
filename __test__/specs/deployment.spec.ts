@@ -1,8 +1,6 @@
 import { deployShieldToken } from '../utils/deploySheildToken'
 import { expect, assert } from 'chai'
 import { ethers } from 'hardhat'
-import Chance from 'chance'
-const chance = new Chance()
 
 describe('UNIT TEST: Shield Token - deployment', () => {
   it('should return correct name when token is deployed', async () => {

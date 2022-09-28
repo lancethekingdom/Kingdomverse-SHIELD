@@ -1,5 +1,5 @@
 import { deployShieldToken } from '../utils/deploySheildToken'
-import { expect, assert } from 'chai'
+import { expect } from 'chai'
 import { ethers } from 'hardhat'
 import Chance from 'chance'
 import { SafeMath } from '../utils/safeMath'
