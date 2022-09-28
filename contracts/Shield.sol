@@ -1,6 +1,6 @@
 // contracts/King.sol
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.0;
+pragma solidity 0.8.17;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
@@ -10,10 +10,10 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 // import "hardhat/console.sol";
 
 contract Shield is ERC20, Pausable, Ownable, ERC20Burnable {
-    uint256 public constant RESERVE = 2000000 ether;
+    uint256 public constant RESERVE = 2 ether * 10**6;
     // temp: half year in seconds
     uint256 public constant HALVING_PERIOD = 15552000;
-    uint256 public constant INITIAL_MINTABLE_PER_PERIOD = 2000000000 ether;
+    uint256 public constant INITIAL_MINTABLE_PER_PERIOD = 2 ether * 10**9;
     uint256 public immutable deployTime;
     address public authSigner;
     mapping(uint256 => uint256) periodicMinted;
@@ -27,6 +27,15 @@ contract Shield is ERC20, Pausable, Ownable, ERC20Burnable {
         _mint(msg.sender, RESERVE);
         periodicMinted[0] = 0;
     }
+
+    event Burn(address burner, uint256 amount, uint256 currentPeriod);
+    event BurnFrom(address from, uint256 amount, uint256 currentPeriod);
+    event Mint(
+        address to,
+        uint256 amount,
+        uint256 nonce,
+        uint256 currentPeriod
+    );
 
     function splitSignature(bytes memory sig)
         internal
@@ -83,11 +92,13 @@ contract Shield is ERC20, Pausable, Ownable, ERC20Burnable {
     function burn(uint256 amount) public override {
         _requireNotPaused();
         super.burn(amount);
+        emit Burn(msg.sender, amount, currentPeriod());
     }
 
     function burnFrom(address account, uint256 amount) public override {
         _requireNotPaused();
         super.burnFrom(account, amount);
+        emit BurnFrom(account, amount, currentPeriod());
     }
 
     function _beforeTokenTransfer(
@@ -138,7 +149,7 @@ contract Shield is ERC20, Pausable, Ownable, ERC20Burnable {
         uint256 _amount,
         uint256 _nonce,
         bytes memory sig
-    ) public {
+    ) external {
         require(!usedMintNonces[_nonce], "Nonce consumed");
         require(
             _validateHash(
@@ -153,6 +164,7 @@ contract Shield is ERC20, Pausable, Ownable, ERC20Burnable {
 
         usedMintNonces[_nonce] = true;
         _mint(_to, _amount);
+        emit Mint(_to, _amount, _nonce, currentPeriod());
     }
 
     function _mint(address account, uint256 amount) internal virtual override {
@@ -164,5 +176,10 @@ contract Shield is ERC20, Pausable, Ownable, ERC20Burnable {
 
         _requireNotPaused();
         super._mint(account, amount);
+    }
+
+    function recoverERC20(address tokenAddress) external onlyOwner {
+        IERC20 token = IERC20(tokenAddress);
+        token.transfer(owner(), token.balanceOf(address(this)));
     }
 }
