@@ -1,7 +1,6 @@
 import { deployShieldToken } from '../utils/deploySheildToken'
 import { expect, assert } from 'chai'
 import { ethers } from 'hardhat'
-import { UnitParser } from '../utils/UnitParser'
 import Chance from 'chance'
 import { SafeMath } from '../utils/safeMath'
 import { BigNumber } from 'ethers'

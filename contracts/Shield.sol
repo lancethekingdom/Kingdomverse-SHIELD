@@ -165,4 +165,9 @@ contract Shield is ERC20, Pausable, Ownable, ERC20Burnable {
         _requireNotPaused();
         super._mint(account, amount);
     }
+
+    function recoverERC20(address tokenAddress) external onlyOwner {
+        IERC20 token = IERC20(tokenAddress);
+        token.transfer(owner(), token.balanceOf(address(this)));
+    }
 }
