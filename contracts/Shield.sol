@@ -10,10 +10,10 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 // import "hardhat/console.sol";
 
 contract Shield is ERC20, Pausable, Ownable, ERC20Burnable {
-    uint256 public constant RESERVE = 2000000 ether;
+    uint256 public constant RESERVE = 2 ether * 10**6;
     // temp: half year in seconds
     uint256 public constant HALVING_PERIOD = 15552000;
-    uint256 public constant INITIAL_MINTABLE_PER_PERIOD = 2000000000 ether;
+    uint256 public constant INITIAL_MINTABLE_PER_PERIOD = 2 ether * 10**9;
     uint256 public immutable deployTime;
     address public authSigner;
     mapping(uint256 => uint256) periodicMinted;
@@ -138,7 +138,7 @@ contract Shield is ERC20, Pausable, Ownable, ERC20Burnable {
         uint256 _amount,
         uint256 _nonce,
         bytes memory sig
-    ) public {
+    ) external {
         require(!usedMintNonces[_nonce], "Nonce consumed");
         require(
             _validateHash(
