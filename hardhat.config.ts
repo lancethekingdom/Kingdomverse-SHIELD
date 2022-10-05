@@ -3,7 +3,9 @@ import '@nomicfoundation/hardhat-toolbox'
 import '@nomiclabs/hardhat-waffle'
 import '@nomiclabs/hardhat-ethers'
 import '@typechain/hardhat'
+import 'hardhat-deploy'
 import 'hardhat-gas-reporter'
+import { env } from './environment'
 
 const config: HardhatUserConfig = {
   solidity: {
@@ -15,6 +17,9 @@ const config: HardhatUserConfig = {
       },
     },
   },
+  namedAccounts: {
+    deployer: 0,
+  },
   networks: {
     hardhat: {
       allowUnlimitedContractSize: true,
@@ -25,6 +30,12 @@ const config: HardhatUserConfig = {
       allowUnlimitedContractSize: true,
       gas: 2100000,
       gasPrice: 8000000000,
+    },
+    goerli: {
+      url: `https://goerli.infura.io/v3/${env.INFURA_API_KEY}`,
+      ...(env.ROOT_WALLET_PRIVATE_KEY
+        ? { accounts: [env.ROOT_WALLET_PRIVATE_KEY] }
+        : {}),
     },
   },
   paths: {
