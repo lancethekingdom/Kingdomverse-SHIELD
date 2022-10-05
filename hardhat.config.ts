@@ -33,7 +33,9 @@ const config: HardhatUserConfig = {
     },
     goerli: {
       url: `https://goerli.infura.io/v3/${env.INFURA_API_KEY}`,
-      accounts: [env.ROOT_WALLET_PRIVATE_KEY],
+      ...(env.ROOT_WALLET_PRIVATE_KEY
+        ? { accounts: [env.ROOT_WALLET_PRIVATE_KEY] }
+        : {}),
     },
   },
   paths: {
