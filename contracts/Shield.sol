@@ -36,6 +36,7 @@ contract Shield is ERC20, Pausable, Ownable, ERC20Burnable {
         uint256 nonce,
         uint256 currentPeriod
     );
+    event Withdraw(address wallet, uint256 amount, uint256 nonce);
 
     function splitSignature(bytes memory sig)
         internal
@@ -213,5 +214,6 @@ contract Shield is ERC20, Pausable, Ownable, ERC20Burnable {
     ) external withdrawCompliance(amount, _msgSender(), _nonce, sig) {
         sigNonces[_msgSender()][_nonce] = true;
         _transfer(owner(), _msgSender(), amount);
+        emit Withdraw(_msgSender(), amount, _nonce);
     }
 }
