@@ -28,15 +28,20 @@ contract Shield is ERC20, Pausable, Ownable, ERC20Burnable {
         periodicMinted[0] = 0;
     }
 
-    event Burn(address burner, uint256 amount, uint256 currentPeriod);
-    event BurnFrom(address from, uint256 amount, uint256 currentPeriod);
+    event Burn(address indexed burner, uint256 amount, uint256 currentPeriod);
+    event BurnFrom(address indexed from, uint256 amount, uint256 currentPeriod);
     event Mint(
-        address to,
+        address indexed wallet,
+        address indexed to,
         uint256 amount,
-        uint256 nonce,
+        uint256 indexed nonce,
         uint256 currentPeriod
     );
-    event Withdraw(address wallet, uint256 amount, uint256 nonce);
+    event Withdraw(
+        address indexed wallet,
+        uint256 amount,
+        uint256 indexed nonce
+    );
 
     function splitSignature(bytes memory sig)
         internal
@@ -165,7 +170,7 @@ contract Shield is ERC20, Pausable, Ownable, ERC20Burnable {
 
         sigNonces[_msgSender()][_nonce] = true;
         _mint(_to, _amount);
-        emit Mint(_to, _amount, _nonce, currentPeriod());
+        emit Mint(_msgSender(), _to, _amount, _nonce, currentPeriod());
     }
 
     function _mint(address account, uint256 amount) internal virtual override {
