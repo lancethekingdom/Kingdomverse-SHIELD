@@ -198,7 +198,6 @@ contract Shield is ERC20, Pausable, Ownable, ERC20Burnable {
         _requireNotPaused();
         require(balanceOf(owner()) >= amount, "Insufficient Balance");
         require(!sigNonces[wallet][nonce], "nonce already consumed");
-
         require(
             _validateHash(
                 "withdraw(uint256,address,uint256,bytes)",
