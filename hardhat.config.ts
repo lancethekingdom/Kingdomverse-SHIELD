@@ -36,6 +36,7 @@ const config: HardhatUserConfig = {
       ...(env.ROOT_WALLET_PRIVATE_KEY
         ? { accounts: [env.ROOT_WALLET_PRIVATE_KEY] }
         : {}),
+      tags: ['dev'],
     },
   },
   paths: {

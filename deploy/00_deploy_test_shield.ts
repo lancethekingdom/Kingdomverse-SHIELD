@@ -7,16 +7,16 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   const { deployer } = await getNamedAccounts()
 
-  const res = await deploy('Shield', {
+  const res = await deploy('TestShield', {
     from: deployer,
-    args: [deployer],
+    args: [],
     log: true,
     autoMine: true, // speed up deployment on local network (ganache, hardhat), no effect on live networks
   })
 
   console.log(
-    `Shield has been deployed to ${network.name} at ${res.address} with ${res.gasEstimates} gas`,
+    `TestShield has been deployed to ${network.name} at ${res.address} with ${res.gasEstimates} gas`,
   )
 }
 export default func
-func.tags = ['production']
+func.tags = ["dev"]
