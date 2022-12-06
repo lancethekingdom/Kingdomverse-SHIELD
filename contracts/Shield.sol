@@ -10,6 +10,21 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 // import "hardhat/console.sol";
 
 contract Shield is ERC20, Pausable, Ownable, ERC20Burnable {
+    event Burn(address indexed burner, uint256 amount, uint256 currentPeriod);
+    event BurnFrom(address indexed from, uint256 amount, uint256 currentPeriod);
+    event Mint(
+        address indexed wallet,
+        address indexed to,
+        uint256 amount,
+        uint256 indexed nonce,
+        uint256 currentPeriod
+    );
+    event Withdraw(
+        address indexed wallet,
+        uint256 amount,
+        uint256 indexed nonce
+    );
+
     uint256 public constant RESERVE = 2 ether * 10**6;
     // temp: half year in seconds
     uint256 public constant HALVING_PERIOD = 15552000;
@@ -27,21 +42,6 @@ contract Shield is ERC20, Pausable, Ownable, ERC20Burnable {
         _mint(msg.sender, RESERVE);
         periodicMinted[0] = 0;
     }
-
-    event Burn(address indexed burner, uint256 amount, uint256 currentPeriod);
-    event BurnFrom(address indexed from, uint256 amount, uint256 currentPeriod);
-    event Mint(
-        address indexed wallet,
-        address indexed to,
-        uint256 amount,
-        uint256 indexed nonce,
-        uint256 currentPeriod
-    );
-    event Withdraw(
-        address indexed wallet,
-        uint256 amount,
-        uint256 indexed nonce
-    );
 
     function splitSignature(bytes memory sig)
         internal
