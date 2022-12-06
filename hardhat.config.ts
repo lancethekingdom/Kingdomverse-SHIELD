@@ -37,6 +37,15 @@ const config: HardhatUserConfig = {
         ? { accounts: [env.ROOT_WALLET_PRIVATE_KEY] }
         : {}),
     },
+    bsc_testnet: {
+      url: 'https://data-seed-prebsc-1-s1.binance.org:8545',
+      chainId: 97,
+      gasPrice: 20000000000,
+      ...(env.ROOT_WALLET_PRIVATE_KEY
+        ? { accounts: [env.ROOT_WALLET_PRIVATE_KEY] }
+        : {}),
+      tags: ['dev'],
+    },
   },
   paths: {
     sources: './contracts',

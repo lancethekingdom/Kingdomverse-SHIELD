@@ -10,6 +10,21 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 // import "hardhat/console.sol";
 
 contract Shield is ERC20, Pausable, Ownable, ERC20Burnable {
+    event Burn(address indexed burner, uint256 amount, uint256 currentPeriod);
+    event BurnFrom(address indexed from, uint256 amount, uint256 currentPeriod);
+    event Mint(
+        address indexed wallet,
+        address indexed to,
+        uint256 amount,
+        uint256 indexed nonce,
+        uint256 currentPeriod
+    );
+    event Withdraw(
+        address indexed wallet,
+        uint256 amount,
+        uint256 indexed nonce
+    );
+
     uint256 public constant RESERVE = 2 ether * 10**6;
     // temp: half year in seconds
     uint256 public constant HALVING_PERIOD = 15552000;
@@ -17,7 +32,7 @@ contract Shield is ERC20, Pausable, Ownable, ERC20Burnable {
     uint256 public immutable deployTime;
     address public authSigner;
     mapping(uint256 => uint256) periodicMinted;
-    mapping(uint256 => bool) usedMintNonces;
+    mapping(address => mapping(uint256 => bool)) sigNonces; // all the nonces consumed by each address
 
     constructor(address _authSigner) ERC20("SHIELD", "SHIELD") {
         require(_authSigner != address(0), "Invalid addr");
@@ -27,15 +42,6 @@ contract Shield is ERC20, Pausable, Ownable, ERC20Burnable {
         _mint(msg.sender, RESERVE);
         periodicMinted[0] = 0;
     }
-
-    event Burn(address burner, uint256 amount, uint256 currentPeriod);
-    event BurnFrom(address from, uint256 amount, uint256 currentPeriod);
-    event Mint(
-        address to,
-        uint256 amount,
-        uint256 nonce,
-        uint256 currentPeriod
-    );
 
     function splitSignature(bytes memory sig)
         internal
@@ -125,7 +131,7 @@ contract Shield is ERC20, Pausable, Ownable, ERC20Burnable {
 
     function _validateHash(
         string memory _methodIdentifier,
-        address _minter,
+        address _address,
         uint256 _amount,
         uint256 _nonce,
         bytes memory sig
@@ -135,7 +141,7 @@ contract Shield is ERC20, Pausable, Ownable, ERC20Burnable {
                 abi.encodePacked(
                     _methodIdentifier,
                     address(this),
-                    _minter,
+                    _address,
                     _amount,
                     _nonce
                 )
@@ -150,7 +156,7 @@ contract Shield is ERC20, Pausable, Ownable, ERC20Burnable {
         uint256 _nonce,
         bytes memory sig
     ) external {
-        require(!usedMintNonces[_nonce], "Nonce consumed");
+        require(!sigNonces[_msgSender()][_nonce], "Nonce consumed");
         require(
             _validateHash(
                 "mint(address,uint256,uint256,bytes)",
@@ -162,9 +168,9 @@ contract Shield is ERC20, Pausable, Ownable, ERC20Burnable {
             "Invalid signature"
         );
 
-        usedMintNonces[_nonce] = true;
+        sigNonces[_msgSender()][_nonce] = true;
         _mint(_to, _amount);
-        emit Mint(_to, _amount, _nonce, currentPeriod());
+        emit Mint(_msgSender(), _to, _amount, _nonce, currentPeriod());
     }
 
     function _mint(address account, uint256 amount) internal virtual override {
@@ -181,5 +187,37 @@ contract Shield is ERC20, Pausable, Ownable, ERC20Burnable {
     function recoverERC20(address tokenAddress) external onlyOwner {
         IERC20 token = IERC20(tokenAddress);
         token.transfer(owner(), token.balanceOf(address(this)));
+    }
+
+    modifier withdrawCompliance(
+        uint256 amount,
+        address wallet,
+        uint256 nonce,
+        bytes memory sig
+    ) {
+        _requireNotPaused();
+        require(balanceOf(owner()) >= amount, "Insufficient Balance");
+        require(!sigNonces[wallet][nonce], "nonce already consumed");
+        require(
+            _validateHash(
+                "withdraw(uint256,address,uint256,bytes)",
+                wallet,
+                amount,
+                nonce,
+                sig
+            ),
+            "Invalid signature"
+        );
+        _;
+    }
+
+    function withdraw(
+        uint256 amount,
+        uint256 _nonce,
+        bytes memory sig
+    ) external withdrawCompliance(amount, _msgSender(), _nonce, sig) {
+        sigNonces[_msgSender()][_nonce] = true;
+        _transfer(owner(), _msgSender(), amount);
+        emit Withdraw(_msgSender(), amount, _nonce);
     }
 }
